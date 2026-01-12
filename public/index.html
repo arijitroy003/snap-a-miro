@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>snap-a-miro | Whiteboard to Miro</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>snap-a-miro</h1>
+      <p class="subtitle">Turn whiteboard photos into Miro boards instantly</p>
+    </header>
+
+    <main>
+      <!-- Upload Zone -->
+      <div id="upload-zone" class="upload-zone">
+        <div class="upload-content">
+          <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <p class="upload-text">Drag & drop your whiteboard photo here</p>
+          <p class="upload-subtext">or click to browse</p>
+          <p class="upload-hint">Supports JPEG, PNG, WebP (max 10MB)</p>
+        </div>
+        <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
+      </div>
+
+      <!-- Preview Section -->
+      <div id="preview-section" class="preview-section hidden">
+        <div class="preview-header">
+          <h2>Preview</h2>
+          <button id="clear-btn" class="btn btn-secondary">Clear</button>
+        </div>
+        <div class="preview-container">
+          <img id="preview-image" alt="Whiteboard preview">
+        </div>
+        <div class="model-selector">
+          <label for="model-select">Vision Model:</label>
+          <div class="model-toggle">
+            <button type="button" class="model-btn active" data-model="claude">
+              <span class="model-icon">A</span>
+              Claude
+            </button>
+            <button type="button" class="model-btn" data-model="gemini">
+              <span class="model-icon">G</span>
+              Gemini
+            </button>
+          </div>
+        </div>
+        <div class="action-buttons">
+          <button id="preview-btn" class="btn btn-secondary">Analyze Only</button>
+          <button id="convert-btn" class="btn btn-primary">Convert to Miro</button>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loading-section" class="loading-section hidden">
+        <div class="spinner"></div>
+        <p id="loading-text">Analyzing your whiteboard...</p>
+      </div>
+
+      <!-- Analysis Result -->
+      <div id="analysis-section" class="analysis-section hidden">
+        <h2>Analysis Result</h2>
+        <div class="analysis-stats">
+          <div class="stat">
+            <span class="stat-value" id="stat-shapes">0</span>
+            <span class="stat-label">Shapes</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value" id="stat-connectors">0</span>
+            <span class="stat-label">Connectors</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value" id="stat-text">0</span>
+            <span class="stat-label">Text Blocks</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value" id="stat-stickies">0</span>
+            <span class="stat-label">Sticky Notes</span>
+          </div>
+        </div>
+        <button id="proceed-btn" class="btn btn-primary">Create Miro Board</button>
+      </div>
+
+      <!-- Success State -->
+      <div id="success-section" class="success-section hidden">
+        <svg class="success-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        <h2>Board Created!</h2>
+        <p id="success-message">Your Miro board is ready</p>
+        <a id="board-link" href="#" target="_blank" class="btn btn-primary">Open in Miro</a>
+        <button id="new-upload-btn" class="btn btn-secondary">Convert Another</button>
+      </div>
+
+      <!-- Error State -->
+      <div id="error-section" class="error-section hidden">
+        <svg class="error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="15" y1="9" x2="9" y2="15"/>
+          <line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+        <h2>Something went wrong</h2>
+        <p id="error-message">Error message here</p>
+        <button id="retry-btn" class="btn btn-primary">Try Again</button>
+      </div>
+    </main>
+
+    <footer>
+      <p>Powered by Claude / Gemini Vision + Miro API</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
