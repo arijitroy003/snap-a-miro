@@ -3,15 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>snap-a-miro | Whiteboard to Miro</title>
+  <title>snap-a-miro</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <div class="bg-gradient"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
   <div class="container">
     <header>
       <div class="header-row">
-        <h1>snap-a-miro</h1>
-        <button id="theme-toggle" aria-label="Toggle dark mode">
+        <div class="logo">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <path d="M3 9h18"/>
+              <path d="M9 21V9"/>
+            </svg>
+          </div>
+          <h1>snap-a-miro</h1>
+        </div>
+        <button id="theme-toggle" class="theme-btn" aria-label="Toggle dark mode">
           <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="5"/>
             <line x1="12" y1="1" x2="12" y2="3"/>
@@ -20,192 +34,162 @@
             <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
             <line x1="1" y1="12" x2="3" y2="12"/>
             <line x1="21" y1="12" x2="23" y2="12"/>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
           </svg>
           <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
           </svg>
         </button>
       </div>
-      <p class="subtitle">Turn whiteboard photos into Miro boards instantly</p>
+      <p class="subtitle">Turn whiteboard photos into Miro boards</p>
     </header>
 
     <main>
-      <!-- Settings Panel -->
-      <div class="settings-panel" id="settings-panel">
-        <!-- Model Selector -->
-        <div class="setting-row">
-          <label>Vision Model:</label>
-          <div class="model-toggle">
-            <button type="button" class="model-btn" data-model="claude">
-              <span class="model-icon">A</span>
-              Claude
-            </button>
-            <button type="button" class="model-btn active" data-model="gemini">
-              <span class="model-icon">G</span>
-              Gemini
-            </button>
-          </div>
-        </div>
-
-        <!-- Color Theme -->
-        <div class="setting-row">
-          <label>Color Theme:</label>
-          <div class="theme-toggle">
-            <button type="button" class="theme-btn active" data-theme="default" title="Default">
-              <span class="theme-preview theme-default"></span>
-            </button>
-            <button type="button" class="theme-btn" data-theme="ocean" title="Ocean Blue">
-              <span class="theme-preview theme-ocean"></span>
-            </button>
-            <button type="button" class="theme-btn" data-theme="forest" title="Forest Green">
-              <span class="theme-preview theme-forest"></span>
-            </button>
-            <button type="button" class="theme-btn" data-theme="sunset" title="Sunset Orange">
-              <span class="theme-preview theme-sunset"></span>
-            </button>
-            <button type="button" class="theme-btn" data-theme="purple" title="Purple Haze">
-              <span class="theme-preview theme-purple"></span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Glossary -->
-        <div class="setting-row setting-row-vertical">
-          <label for="glossary-input">
-            Corporate Glossary
-            <span class="label-hint">(helps recognize handwritten terms)</span>
-          </label>
-          <div class="glossary-wrapper">
-            <textarea
-              id="glossary-input"
-              class="glossary-input"
-              placeholder="Enter terms separated by commas, e.g.:&#10;KPI, OKR, ROI, API, MVP, Sprint, Backlog..."
-              rows="2"
-            ></textarea>
-            <div class="glossary-file-upload">
-              <label for="glossary-file" class="file-upload-btn">
-                <svg class="upload-file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                  <polyline points="14 2 14 8 20 8"/>
-                  <line x1="12" y1="18" x2="12" y2="12"/>
-                  <line x1="9" y1="15" x2="15" y2="15"/>
-                </svg>
-                Upload .txt/.csv
-              </label>
-              <input type="file" id="glossary-file" accept=".txt,.csv,text/plain,text/csv" hidden>
-              <span id="glossary-file-name" class="file-name"></span>
+      <!-- Settings -->
+      <section class="settings" id="settings-panel">
+        <div class="glass-card">
+          <div class="card-row">
+            <span class="card-label">Vision Model</span>
+            <div class="segment-control">
+              <button type="button" class="segment" data-model="claude">
+                <span class="segment-icon claude">A</span>
+                Claude
+              </button>
+              <button type="button" class="segment active" data-model="gemini">
+                <span class="segment-icon gemini">G</span>
+                Gemini
+              </button>
             </div>
           </div>
         </div>
 
-        <!-- AI Personalization -->
-        <div class="setting-row setting-row-vertical ai-prompt-section">
-          <label for="ai-prompt-input">
-            <svg class="sparkle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707"/>
-              <circle cx="12" cy="12" r="4"/>
-            </svg>
-            Personalise with AI
-            <span class="label-hint">(tell AI how to style your board)</span>
-          </label>
-          <textarea
-            id="ai-prompt-input"
-            class="ai-prompt-input"
-            placeholder="E.g.: Make it look professional, use a clean flowchart layout, add icons where relevant, emphasize the decision points..."
-            rows="2"
-          ></textarea>
+        <div class="glass-card">
+          <div class="card-row">
+            <span class="card-label">Color Scheme</span>
+            <div class="color-pills">
+              <button type="button" class="color-pill active" data-theme="default" style="background:#0071e3; color:#0071e3" title="Default"></button>
+              <button type="button" class="color-pill" data-theme="ocean" style="background:#5ac8fa; color:#5ac8fa" title="Ocean"></button>
+              <button type="button" class="color-pill" data-theme="forest" style="background:#30d158; color:#30d158" title="Forest"></button>
+              <button type="button" class="color-pill" data-theme="sunset" style="background:#ff9f0a; color:#ff9f0a" title="Sunset"></button>
+              <button type="button" class="color-pill" data-theme="purple" style="background:#bf5af2; color:#bf5af2" title="Purple"></button>
+            </div>
+          </div>
         </div>
-      </div>
+
+        <div class="glass-card input-group">
+          <span class="card-label">Glossary <span class="card-hint">helps recognize terms</span></span>
+          <div class="input-row">
+            <input type="text" id="glossary-input" class="glass-input" placeholder="KPI, OKR, Sprint, Backlog...">
+            <label for="glossary-file" class="icon-button" title="Upload .txt or .csv">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </label>
+            <input type="file" id="glossary-file" accept=".txt,.csv,text/plain,text/csv" hidden>
+          </div>
+          <span id="glossary-file-name" class="file-hint"></span>
+        </div>
+
+        <div class="glass-card input-group">
+          <span class="card-label">Style Prompt <span class="card-hint">optional</span></span>
+          <input type="text" id="ai-prompt-input" class="glass-input" placeholder="e.g. Clean flowchart, emphasize decisions...">
+        </div>
+      </section>
 
       <!-- Upload Zone -->
       <div id="upload-zone" class="upload-zone">
-        <div class="upload-content">
-          <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <div class="upload-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
             <polyline points="17 8 12 3 7 8"/>
             <line x1="12" y1="3" x2="12" y2="15"/>
           </svg>
-          <p class="upload-text">Drag & drop your whiteboard photo here</p>
-          <p class="upload-subtext">or click to browse</p>
-          <p class="upload-hint">Supports JPEG, PNG, WebP (max 10MB)</p>
+        </div>
+        <p class="upload-text">Drop your whiteboard photo</p>
+        <p class="upload-hint">or click to browse</p>
+        <div class="format-tags">
+          <span class="format-tag">JPG</span>
+          <span class="format-tag">PNG</span>
+          <span class="format-tag">WebP</span>
         </div>
         <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
       </div>
 
       <!-- Preview Section -->
       <div id="preview-section" class="preview-section hidden">
-        <div class="preview-header">
-          <h2>Preview</h2>
-          <button id="clear-btn" class="btn btn-secondary">Clear</button>
-        </div>
-        <div class="preview-container">
-          <img id="preview-image" alt="Whiteboard preview">
-        </div>
-        <div class="action-buttons">
-          <button id="preview-btn" class="btn btn-secondary">Analyze Only</button>
-          <button id="convert-btn" class="btn btn-primary">Convert to Miro</button>
+        <div class="glass-card preview-card">
+          <div class="preview-header">
+            <span class="card-label">Preview</span>
+            <button id="clear-btn" class="text-btn">Clear</button>
+          </div>
+          <div class="preview-container">
+            <img id="preview-image" alt="Whiteboard preview">
+          </div>
+          <div class="action-row">
+            <button id="preview-btn" class="btn btn-ghost">Analyze</button>
+            <button id="convert-btn" class="btn btn-primary">Convert to Miro</button>
+          </div>
         </div>
       </div>
 
       <!-- Loading State -->
       <div id="loading-section" class="loading-section hidden">
-        <div class="spinner"></div>
-        <p id="loading-text">Analyzing your whiteboard...</p>
+        <div class="glass-card loading-card">
+          <div class="spinner"></div>
+          <p id="loading-text">Analyzing...</p>
+        </div>
       </div>
 
       <!-- Analysis Result -->
       <div id="analysis-section" class="analysis-section hidden">
-        <h2>Analysis Result</h2>
-        <div class="analysis-stats">
-          <div class="stat">
-            <span class="stat-value" id="stat-shapes">0</span>
-            <span class="stat-label">Shapes</span>
+        <div class="glass-card analysis-card">
+          <p class="analysis-title">Found</p>
+          <div class="analysis-stats">
+            <div class="stat"><span id="stat-shapes">0</span> shapes</div>
+            <div class="stat"><span id="stat-connectors">0</span> connectors</div>
+            <div class="stat"><span id="stat-text">0</span> text</div>
+            <div class="stat"><span id="stat-stickies">0</span> stickies</div>
           </div>
-          <div class="stat">
-            <span class="stat-value" id="stat-connectors">0</span>
-            <span class="stat-label">Connectors</span>
-          </div>
-          <div class="stat">
-            <span class="stat-value" id="stat-text">0</span>
-            <span class="stat-label">Text Blocks</span>
-          </div>
-          <div class="stat">
-            <span class="stat-value" id="stat-stickies">0</span>
-            <span class="stat-label">Sticky Notes</span>
-          </div>
+          <button id="proceed-btn" class="btn btn-primary btn-full">Create Miro Board</button>
         </div>
-        <button id="proceed-btn" class="btn btn-primary">Create Miro Board</button>
       </div>
 
       <!-- Success State -->
       <div id="success-section" class="success-section hidden">
-        <svg class="success-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-          <polyline points="22 4 12 14.01 9 11.01"/>
-        </svg>
-        <h2>Board Created!</h2>
-        <p id="success-message">Your Miro board is ready</p>
-        <a id="board-link" href="#" target="_blank" class="btn btn-primary">Open in Miro</a>
-        <button id="new-upload-btn" class="btn btn-secondary">Convert Another</button>
+        <div class="glass-card success-card">
+          <div class="success-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <p class="success-title">Board created</p>
+          <p id="success-message" class="success-detail">Ready to view</p>
+          <div class="success-actions">
+            <a id="board-link" href="#" target="_blank" class="btn btn-primary">Open in Miro</a>
+            <button id="new-upload-btn" class="btn btn-ghost">New</button>
+          </div>
+        </div>
       </div>
 
       <!-- Error State -->
       <div id="error-section" class="error-section hidden">
-        <svg class="error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="15" y1="9" x2="9" y2="15"/>
-          <line x1="9" y1="9" x2="15" y2="15"/>
-        </svg>
-        <h2>Something went wrong</h2>
-        <p id="error-message">Error message here</p>
-        <button id="retry-btn" class="btn btn-primary">Try Again</button>
+        <div class="glass-card error-card">
+          <div class="error-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </div>
+          <p class="error-title">Something went wrong</p>
+          <p id="error-message" class="error-detail">Error</p>
+          <button id="retry-btn" class="btn btn-primary">Try again</button>
+        </div>
       </div>
     </main>
 
     <footer>
-      <p>Powered by Claude / Gemini Vision + Miro API</p>
+      <p>Powered by <a href="#">Claude</a> / <a href="#">Gemini</a> + <a href="#">Miro</a></p>
     </footer>
   </div>
 

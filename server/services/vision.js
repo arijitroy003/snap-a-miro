@@ -5,9 +5,11 @@ let client = null;
 
 function getClient() {
   if (!client) {
-    client = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY,
-    });
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      throw new Error('Claude API key not configured. Please set ANTHROPIC_API_KEY in your environment.');
+    }
+    client = new Anthropic({ apiKey });
   }
   return client;
 }
@@ -119,29 +121,43 @@ export async function analyzeWhiteboard(imageBuffer, mimeType, glossary, aiPromp
 
   const prompt = buildPrompt(glossary, aiPrompt);
 
-  const response = await getClient().messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 4096,
-    messages: [
-      {
-        role: 'user',
-        content: [
-          {
-            type: 'image',
-            source: {
-              type: 'base64',
-              media_type: mediaType,
-              data: base64Image,
+  let response;
+  try {
+    response = await getClient().messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 4096,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: {
+                type: 'base64',
+                media_type: mediaType,
+                data: base64Image,
+              },
             },
-          },
-          {
-            type: 'text',
-            text: prompt,
-          },
-        ],
-      },
-    ],
-  });
+            {
+              type: 'text',
+              text: prompt,
+            },
+          ],
+        },
+      ],
+    });
+  } catch (error) {
+    if (error.status === 401) {
+      throw new Error('Claude API key is invalid or expired. Please check your ANTHROPIC_API_KEY.');
+    }
+    if (error.status === 429) {
+      throw new Error('Claude API rate limit exceeded. Please try again in a moment.');
+    }
+    if (error.status === 500 || error.status === 503) {
+      throw new Error('Claude API is temporarily unavailable. Please try again later.');
+    }
+    throw new Error(`Claude API error: ${error.message || 'Unknown error'}`);
+  }
 
   const textContent = response.content.find((c) => c.type === 'text');
   if (!textContent) {

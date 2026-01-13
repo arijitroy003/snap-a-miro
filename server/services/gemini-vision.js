@@ -7,7 +7,7 @@ function getClient() {
   if (!client) {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      throw new Error('GEMINI_API_KEY must be set for Gemini vision');
+      throw new Error('Gemini API key not configured. Please set GEMINI_API_KEY in your environment.');
     }
     client = new GoogleGenerativeAI(apiKey);
   }
@@ -129,7 +129,23 @@ export async function analyzeWhiteboard(imageBuffer, mimeType, glossary, aiPromp
     },
   };
 
-  const result = await model.generateContent([prompt, imagePart]);
+  let result;
+  try {
+    result = await model.generateContent([prompt, imagePart]);
+  } catch (error) {
+    const errorMessage = error.message || '';
+    if (errorMessage.includes('API_KEY_INVALID') || errorMessage.includes('401')) {
+      throw new Error('Gemini API key is invalid or expired. Please check your GEMINI_API_KEY.');
+    }
+    if (errorMessage.includes('RATE_LIMIT') || errorMessage.includes('429')) {
+      throw new Error('Gemini API rate limit exceeded. Please try again in a moment.');
+    }
+    if (errorMessage.includes('503') || errorMessage.includes('unavailable')) {
+      throw new Error('Gemini API is temporarily unavailable. Please try again later.');
+    }
+    throw new Error(`Gemini API error: ${errorMessage || 'Unknown error'}`);
+  }
+
   const response = await result.response;
   const text = response.text().trim();
 

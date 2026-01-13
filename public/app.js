@@ -56,8 +56,8 @@ let analysisResult = null;
 let selectedModel = 'gemini';
 let selectedTheme = 'default';
 
-// Model toggle buttons
-const modelBtns = document.querySelectorAll('.model-btn');
+// Model toggle buttons (segmented control)
+const modelBtns = document.querySelectorAll('.segment[data-model]');
 modelBtns.forEach((btn) => {
   btn.addEventListener('click', () => {
     modelBtns.forEach((b) => b.classList.remove('active'));
@@ -66,8 +66,8 @@ modelBtns.forEach((btn) => {
   });
 });
 
-// Theme toggle buttons
-const themeBtns = document.querySelectorAll('.theme-btn');
+// Theme toggle buttons (color pills)
+const themeBtns = document.querySelectorAll('.color-pill[data-theme]');
 themeBtns.forEach((btn) => {
   btn.addEventListener('click', () => {
     themeBtns.forEach((b) => b.classList.remove('active'));
@@ -293,11 +293,11 @@ function resetToUpload() {
 
   // Reset model selector
   modelBtns.forEach((b) => b.classList.remove('active'));
-  document.querySelector('.model-btn[data-model="gemini"]')?.classList.add('active');
+  document.querySelector('.segment[data-model="gemini"]')?.classList.add('active');
 
   // Reset theme selector
   themeBtns.forEach((b) => b.classList.remove('active'));
-  document.querySelector('.theme-btn[data-theme="default"]')?.classList.add('active');
+  document.querySelector('.color-pill[data-theme="default"]')?.classList.add('active');
 
   // Reset file inputs but keep glossary text (user might want to reuse it)
   if (glossaryFileInput) glossaryFileInput.value = '';

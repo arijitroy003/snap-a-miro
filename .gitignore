@@ -3,3 +3,6 @@ node_modules/
 *.log
 .DS_Store
 uploads/
+
+# Design previews
+public/option-*.html

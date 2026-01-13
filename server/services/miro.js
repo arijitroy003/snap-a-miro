@@ -5,7 +5,7 @@ const MIRO_API_BASE = 'https://api.miro.com/v2';
 function getMiroClient() {
   const token = process.env.MIRO_ACCESS_TOKEN;
   if (!token) {
-    throw new Error('MIRO_ACCESS_TOKEN is not set in environment variables');
+    throw new Error('Miro access token not configured. Please set MIRO_ACCESS_TOKEN in your environment.');
   }
 
   return axios.create({
@@ -15,6 +15,35 @@ function getMiroClient() {
       'Content-Type': 'application/json',
     },
   });
+}
+
+// Parse Miro API errors into user-friendly messages
+function parseMiroError(error) {
+  if (error.response) {
+    const status = error.response.status;
+    const data = error.response.data;
+
+    if (status === 401) {
+      return 'Miro access token is invalid or expired. Please check your MIRO_ACCESS_TOKEN.';
+    }
+    if (status === 403) {
+      return 'Miro access denied. Please ensure your token has the required permissions (boards:write).';
+    }
+    if (status === 429) {
+      return 'Miro API rate limit exceeded. Please try again in a moment.';
+    }
+    if (status >= 500) {
+      return 'Miro API is temporarily unavailable. Please try again later.';
+    }
+
+    return data?.message || `Miro API error (${status})`;
+  }
+
+  if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+    return 'Unable to connect to Miro API. Please check your internet connection.';
+  }
+
+  return error.message || 'Unknown Miro API error';
 }
 
 // Retry helper for rate limiting
@@ -47,9 +76,13 @@ export async function createBoard(name, description = '') {
     payload.teamId = process.env.MIRO_TEAM_ID;
   }
 
-  const response = await withRetry(() => client.post('/boards', payload));
-  console.log('Created Miro board:', response.data.id);
-  return response.data;
+  try {
+    const response = await withRetry(() => client.post('/boards', payload));
+    console.log('Created Miro board:', response.data.id);
+    return response.data;
+  } catch (error) {
+    throw new Error(parseMiroError(error));
+  }
 }
 
 export async function createShape(boardId, shape) {
