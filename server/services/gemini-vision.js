@@ -5,16 +5,17 @@ let client = null;
 
 function getClient() {
   if (!client) {
-    const apiKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      throw new Error('GOOGLE_API_KEY or GEMINI_API_KEY must be set for Gemini vision');
+      throw new Error('GEMINI_API_KEY must be set for Gemini vision');
     }
     client = new GoogleGenerativeAI(apiKey);
   }
   return client;
 }
 
-const VISION_PROMPT = `You are an expert at analyzing whiteboard photos and extracting structured diagram data.
+function buildPrompt(glossary, aiPrompt) {
+  let prompt = `You are an expert at analyzing whiteboard photos and extracting structured diagram data.
 
 Analyze this whiteboard image and extract all visual elements into a structured JSON format.
 
@@ -23,7 +24,27 @@ IMPORTANT RULES:
 2. Estimate element positions based on their visual location in the image
 3. Identify connections/arrows between shapes
 4. Read all text accurately, even if handwritten
-5. Determine shape types based on their appearance
+5. Determine shape types based on their appearance`;
+
+  if (glossary && glossary.trim()) {
+    prompt += `
+
+CORPORATE GLOSSARY - When reading handwritten text, prefer these known terms if the handwriting is ambiguous:
+${glossary}
+
+Use these terms exactly as written when you recognize them in the image.`;
+  }
+
+  if (aiPrompt && aiPrompt.trim()) {
+    prompt += `
+
+USER CUSTOMIZATION REQUEST:
+${aiPrompt}
+
+Apply this customization when analyzing the whiteboard and suggesting colors, layout improvements, or emphasis.`;
+  }
+
+  prompt += `
 
 Return ONLY valid JSON with this exact structure (no markdown, no explanation):
 
@@ -83,12 +104,22 @@ Guidelines:
 
 Return ONLY the JSON object, nothing else.`;
 
-export async function analyzeWhiteboard(imageBuffer, mimeType) {
+  return prompt;
+}
+
+export async function analyzeWhiteboard(imageBuffer, mimeType, glossary, aiPrompt) {
   const base64Image = imageBuffer.toString('base64');
   const mediaType = mimeType || 'image/jpeg';
 
   console.log('Sending image to Gemini Vision for analysis...');
+  if (glossary) {
+    console.log('Using glossary terms:', glossary.substring(0, 100) + '...');
+  }
+  if (aiPrompt) {
+    console.log('AI customization:', aiPrompt.substring(0, 50) + '...');
+  }
 
+  const prompt = buildPrompt(glossary, aiPrompt);
   const model = getClient().getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
 
   const imagePart = {
@@ -98,7 +129,7 @@ export async function analyzeWhiteboard(imageBuffer, mimeType) {
     },
   };
 
-  const result = await model.generateContent([VISION_PROMPT, imagePart]);
+  const result = await model.generateContent([prompt, imagePart]);
   const response = await result.response;
   const text = response.text().trim();
 

@@ -12,7 +12,8 @@ function getClient() {
   return client;
 }
 
-const VISION_PROMPT = `You are an expert at analyzing whiteboard photos and extracting structured diagram data.
+function buildPrompt(glossary, aiPrompt) {
+  let prompt = `You are an expert at analyzing whiteboard photos and extracting structured diagram data.
 
 Analyze this whiteboard image and extract all visual elements into a structured JSON format.
 
@@ -21,7 +22,27 @@ IMPORTANT RULES:
 2. Estimate element positions based on their visual location in the image
 3. Identify connections/arrows between shapes
 4. Read all text accurately, even if handwritten
-5. Determine shape types based on their appearance
+5. Determine shape types based on their appearance`;
+
+  if (glossary && glossary.trim()) {
+    prompt += `
+
+CORPORATE GLOSSARY - When reading handwritten text, prefer these known terms if the handwriting is ambiguous:
+${glossary}
+
+Use these terms exactly as written when you recognize them in the image.`;
+  }
+
+  if (aiPrompt && aiPrompt.trim()) {
+    prompt += `
+
+USER CUSTOMIZATION REQUEST:
+${aiPrompt}
+
+Apply this customization when analyzing the whiteboard and suggesting colors, layout improvements, or emphasis.`;
+  }
+
+  prompt += `
 
 Return ONLY valid JSON with this exact structure (no markdown, no explanation):
 
@@ -81,11 +102,22 @@ Guidelines:
 
 Return ONLY the JSON object, nothing else.`;
 
-export async function analyzeWhiteboard(imageBuffer, mimeType) {
+  return prompt;
+}
+
+export async function analyzeWhiteboard(imageBuffer, mimeType, glossary, aiPrompt) {
   const base64Image = imageBuffer.toString('base64');
   const mediaType = mimeType || 'image/jpeg';
 
   console.log('Sending image to Claude Vision for analysis...');
+  if (glossary) {
+    console.log('Using glossary terms:', glossary.substring(0, 100) + '...');
+  }
+  if (aiPrompt) {
+    console.log('AI customization:', aiPrompt.substring(0, 50) + '...');
+  }
+
+  const prompt = buildPrompt(glossary, aiPrompt);
 
   const response = await getClient().messages.create({
     model: 'claude-sonnet-4-20250514',
@@ -104,7 +136,7 @@ export async function analyzeWhiteboard(imageBuffer, mimeType) {
           },
           {
             type: 'text',
-            text: VISION_PROMPT,
+            text: prompt,
           },
         ],
       },

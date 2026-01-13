@@ -1,3 +1,36 @@
+// Theme Toggle
+const themeToggle = document.getElementById('theme-toggle');
+
+// Initialize theme from localStorage or system preference
+function initTheme() {
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme) {
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+}
+
+// Toggle theme
+function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+  if (newTheme === 'light') {
+    document.documentElement.removeAttribute('data-theme');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+  localStorage.setItem('theme', newTheme);
+}
+
+// Initialize theme on load
+initTheme();
+
+// Theme toggle click handler
+themeToggle?.addEventListener('click', toggleTheme);
+
 // DOM Elements
 const uploadZone = document.getElementById('upload-zone');
 const fileInput = document.getElementById('file-input');
@@ -20,7 +53,8 @@ const retryBtn = document.getElementById('retry-btn');
 
 let selectedFile = null;
 let analysisResult = null;
-let selectedModel = 'claude';
+let selectedModel = 'gemini';
+let selectedTheme = 'default';
 
 // Model toggle buttons
 const modelBtns = document.querySelectorAll('.model-btn');
@@ -31,6 +65,60 @@ modelBtns.forEach((btn) => {
     selectedModel = btn.dataset.model;
   });
 });
+
+// Theme toggle buttons
+const themeBtns = document.querySelectorAll('.theme-btn');
+themeBtns.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    themeBtns.forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedTheme = btn.dataset.theme;
+  });
+});
+
+// Glossary input
+const glossaryInput = document.getElementById('glossary-input');
+const glossaryFileInput = document.getElementById('glossary-file');
+const glossaryFileName = document.getElementById('glossary-file-name');
+
+// Handle glossary file upload
+glossaryFileInput?.addEventListener('change', async (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  try {
+    const text = await file.text();
+    // Parse CSV or text file - handle both comma and newline separated values
+    let terms = text
+      .split(/[\n,]/)
+      .map(term => term.trim())
+      .filter(term => term.length > 0);
+
+    // Append to existing glossary
+    const existing = glossaryInput.value.trim();
+    if (existing) {
+      glossaryInput.value = existing + ', ' + terms.join(', ');
+    } else {
+      glossaryInput.value = terms.join(', ');
+    }
+
+    glossaryFileName.textContent = file.name + ` (${terms.length} terms)`;
+  } catch (error) {
+    console.error('Failed to read glossary file:', error);
+    glossaryFileName.textContent = 'Error reading file';
+  }
+});
+
+function getGlossary() {
+  return glossaryInput?.value?.trim() || '';
+}
+
+// AI Prompt input
+const aiPromptInput = document.getElementById('ai-prompt-input');
+
+function getAiPrompt() {
+  return aiPromptInput?.value?.trim() || '';
+}
 
 // Event Listeners
 uploadZone.addEventListener('click', () => fileInput.click());
@@ -110,6 +198,9 @@ async function analyzeOnly() {
     const formData = new FormData();
     formData.append('image', selectedFile);
     formData.append('model', selectedModel);
+    formData.append('glossary', getGlossary());
+    formData.append('theme', selectedTheme);
+    formData.append('aiPrompt', getAiPrompt());
 
     const response = await fetch('/api/preview', {
       method: 'POST',
@@ -139,6 +230,9 @@ async function convertToMiro() {
     const formData = new FormData();
     formData.append('image', selectedFile);
     formData.append('model', selectedModel);
+    formData.append('glossary', getGlossary());
+    formData.append('theme', selectedTheme);
+    formData.append('aiPrompt', getAiPrompt());
 
     const response = await fetch('/api/convert', {
       method: 'POST',
@@ -192,13 +286,22 @@ function showError(message) {
 function resetToUpload() {
   selectedFile = null;
   analysisResult = null;
-  selectedModel = 'claude';
+  selectedModel = 'gemini';
+  selectedTheme = 'default';
   fileInput.value = '';
   previewImage.src = '';
 
   // Reset model selector
   modelBtns.forEach((b) => b.classList.remove('active'));
-  document.querySelector('.model-btn[data-model="claude"]')?.classList.add('active');
+  document.querySelector('.model-btn[data-model="gemini"]')?.classList.add('active');
+
+  // Reset theme selector
+  themeBtns.forEach((b) => b.classList.remove('active'));
+  document.querySelector('.theme-btn[data-theme="default"]')?.classList.add('active');
+
+  // Reset file inputs but keep glossary text (user might want to reuse it)
+  if (glossaryFileInput) glossaryFileInput.value = '';
+  if (glossaryFileName) glossaryFileName.textContent = '';
 
   hideAll();
   uploadZone.classList.remove('hidden');

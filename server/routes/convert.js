@@ -30,15 +30,21 @@ router.post('/convert', upload.single('image'), async (req, res) => {
       return res.status(400).json({ error: 'No image file provided' });
     }
 
-    const selectedModel = req.body.model || 'claude';
-    console.log(`Processing image: ${req.file.originalname} (${req.file.size} bytes) with ${selectedModel}`);
+    const selectedModel = req.body.model || 'gemini';
+    const glossary = req.body.glossary || '';
+    const theme = req.body.theme || 'default';
+    const aiPrompt = req.body.aiPrompt || '';
+    console.log(`Processing image: ${req.file.originalname} (${req.file.size} bytes) with ${selectedModel}, theme: ${theme}`);
+    if (aiPrompt) {
+      console.log('AI personalization:', aiPrompt.substring(0, 50) + '...');
+    }
 
     // Step 1: Analyze the whiteboard image with selected vision model
     const analyzeWhiteboard = getVisionAnalyzer(selectedModel);
-    const visionResult = await analyzeWhiteboard(req.file.buffer, req.file.mimetype);
+    const visionResult = await analyzeWhiteboard(req.file.buffer, req.file.mimetype, glossary, aiPrompt);
 
     // Step 2: Transform coordinates and prepare Miro items
-    const miroData = transformVisionToMiro(visionResult);
+    const miroData = transformVisionToMiro(visionResult, theme);
 
     // Step 3: Create the Miro board
     const boardName = miroData.title || `Whiteboard Import - ${new Date().toLocaleDateString()}`;
@@ -116,12 +122,15 @@ router.post('/preview', upload.single('image'), async (req, res) => {
       return res.status(400).json({ error: 'No image file provided' });
     }
 
-    const selectedModel = req.body.model || 'claude';
+    const selectedModel = req.body.model || 'gemini';
+    const glossary = req.body.glossary || '';
+    const theme = req.body.theme || 'default';
+    const aiPrompt = req.body.aiPrompt || '';
     console.log(`Preview analysis with ${selectedModel}`);
 
     const analyzeWhiteboard = getVisionAnalyzer(selectedModel);
-    const visionResult = await analyzeWhiteboard(req.file.buffer, req.file.mimetype);
-    const miroData = transformVisionToMiro(visionResult);
+    const visionResult = await analyzeWhiteboard(req.file.buffer, req.file.mimetype, glossary, aiPrompt);
+    const miroData = transformVisionToMiro(visionResult, theme);
 
     res.json({
       success: true,

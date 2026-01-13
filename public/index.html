@@ -9,11 +9,116 @@
 <body>
   <div class="container">
     <header>
-      <h1>snap-a-miro</h1>
+      <div class="header-row">
+        <h1>snap-a-miro</h1>
+        <button id="theme-toggle" aria-label="Toggle dark mode">
+          <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+          <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+      </div>
       <p class="subtitle">Turn whiteboard photos into Miro boards instantly</p>
     </header>
 
     <main>
+      <!-- Settings Panel -->
+      <div class="settings-panel" id="settings-panel">
+        <!-- Model Selector -->
+        <div class="setting-row">
+          <label>Vision Model:</label>
+          <div class="model-toggle">
+            <button type="button" class="model-btn" data-model="claude">
+              <span class="model-icon">A</span>
+              Claude
+            </button>
+            <button type="button" class="model-btn active" data-model="gemini">
+              <span class="model-icon">G</span>
+              Gemini
+            </button>
+          </div>
+        </div>
+
+        <!-- Color Theme -->
+        <div class="setting-row">
+          <label>Color Theme:</label>
+          <div class="theme-toggle">
+            <button type="button" class="theme-btn active" data-theme="default" title="Default">
+              <span class="theme-preview theme-default"></span>
+            </button>
+            <button type="button" class="theme-btn" data-theme="ocean" title="Ocean Blue">
+              <span class="theme-preview theme-ocean"></span>
+            </button>
+            <button type="button" class="theme-btn" data-theme="forest" title="Forest Green">
+              <span class="theme-preview theme-forest"></span>
+            </button>
+            <button type="button" class="theme-btn" data-theme="sunset" title="Sunset Orange">
+              <span class="theme-preview theme-sunset"></span>
+            </button>
+            <button type="button" class="theme-btn" data-theme="purple" title="Purple Haze">
+              <span class="theme-preview theme-purple"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Glossary -->
+        <div class="setting-row setting-row-vertical">
+          <label for="glossary-input">
+            Corporate Glossary
+            <span class="label-hint">(helps recognize handwritten terms)</span>
+          </label>
+          <div class="glossary-wrapper">
+            <textarea
+              id="glossary-input"
+              class="glossary-input"
+              placeholder="Enter terms separated by commas, e.g.:&#10;KPI, OKR, ROI, API, MVP, Sprint, Backlog..."
+              rows="2"
+            ></textarea>
+            <div class="glossary-file-upload">
+              <label for="glossary-file" class="file-upload-btn">
+                <svg class="upload-file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="12" y1="18" x2="12" y2="12"/>
+                  <line x1="9" y1="15" x2="15" y2="15"/>
+                </svg>
+                Upload .txt/.csv
+              </label>
+              <input type="file" id="glossary-file" accept=".txt,.csv,text/plain,text/csv" hidden>
+              <span id="glossary-file-name" class="file-name"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Personalization -->
+        <div class="setting-row setting-row-vertical ai-prompt-section">
+          <label for="ai-prompt-input">
+            <svg class="sparkle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707"/>
+              <circle cx="12" cy="12" r="4"/>
+            </svg>
+            Personalise with AI
+            <span class="label-hint">(tell AI how to style your board)</span>
+          </label>
+          <textarea
+            id="ai-prompt-input"
+            class="ai-prompt-input"
+            placeholder="E.g.: Make it look professional, use a clean flowchart layout, add icons where relevant, emphasize the decision points..."
+            rows="2"
+          ></textarea>
+        </div>
+      </div>
+
       <!-- Upload Zone -->
       <div id="upload-zone" class="upload-zone">
         <div class="upload-content">
@@ -37,19 +142,6 @@
         </div>
         <div class="preview-container">
           <img id="preview-image" alt="Whiteboard preview">
-        </div>
-        <div class="model-selector">
-          <label for="model-select">Vision Model:</label>
-          <div class="model-toggle">
-            <button type="button" class="model-btn active" data-model="claude">
-              <span class="model-icon">A</span>
-              Claude
-            </button>
-            <button type="button" class="model-btn" data-model="gemini">
-              <span class="model-icon">G</span>
-              Gemini
-            </button>
-          </div>
         </div>
         <div class="action-buttons">
           <button id="preview-btn" class="btn btn-secondary">Analyze Only</button>

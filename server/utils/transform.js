@@ -9,7 +9,51 @@ const CANVAS_HEIGHT = 1500;
 const WIDTH_MULTIPLIER = 20;
 const HEIGHT_MULTIPLIER = 15;
 
-// Color palette for shapes
+// Color themes for Miro shapes
+const THEMES = {
+  default: {
+    primary: '#2563eb',
+    secondary: '#64748b',
+    accent: '#0ea5e9',
+    background: '#ffffff',
+    border: '#1a1a1a',
+  },
+  ocean: {
+    primary: '#0ea5e9',
+    secondary: '#06b6d4',
+    accent: '#0284c7',
+    background: '#e0f2fe',
+    border: '#0369a1',
+  },
+  forest: {
+    primary: '#22c55e',
+    secondary: '#16a34a',
+    accent: '#15803d',
+    background: '#dcfce7',
+    border: '#166534',
+  },
+  sunset: {
+    primary: '#f97316',
+    secondary: '#eab308',
+    accent: '#ea580c',
+    background: '#fef3c7',
+    border: '#c2410c',
+  },
+  purple: {
+    primary: '#8b5cf6',
+    secondary: '#a855f7',
+    accent: '#7c3aed',
+    background: '#f3e8ff',
+    border: '#6b21a8',
+  },
+};
+
+// Get theme colors
+function getTheme(themeName) {
+  return THEMES[themeName] || THEMES.default;
+}
+
+// Color palette for shapes (fallback for color hints)
 const COLOR_PALETTE = {
   red: '#ff6b6b',
   blue: '#4ecdc4',
@@ -22,7 +66,9 @@ const COLOR_PALETTE = {
   default: '#ffffff',
 };
 
-export function transformVisionToMiro(visionData) {
+export function transformVisionToMiro(visionData, themeName = 'default') {
+  const theme = getTheme(themeName);
+
   const result = {
     shapes: [],
     textBlocks: [],
@@ -34,9 +80,13 @@ export function transformVisionToMiro(visionData) {
   // Map to track vision IDs to Miro item IDs (filled after creation)
   const idMap = new Map();
 
-  // Transform shapes
+  // Transform shapes with theme colors
   if (visionData.shapes && Array.isArray(visionData.shapes)) {
-    result.shapes = visionData.shapes.map((shape) => {
+    result.shapes = visionData.shapes.map((shape, index) => {
+      // Cycle through theme colors for shapes
+      const colorOptions = [theme.primary, theme.secondary, theme.accent];
+      const themeColor = colorOptions[index % colorOptions.length];
+
       const transformed = {
         visionId: shape.id,
         type: shape.type || 'rectangle',
@@ -45,8 +95,8 @@ export function transformVisionToMiro(visionData) {
         y: percentToPixel(shape.y, CANVAS_HEIGHT),
         width: (shape.width || 15) * WIDTH_MULTIPLIER,
         height: (shape.height || 10) * HEIGHT_MULTIPLIER,
-        fillColor: getColor(shape.color),
-        borderColor: '#1a1a1a',
+        fillColor: shape.color ? getColor(shape.color) : themeColor,
+        borderColor: theme.border,
       };
       return transformed;
     });
